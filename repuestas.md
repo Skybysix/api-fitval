@@ -22,4 +22,10 @@ error: failed to push some refs to 'https://github.com/Skybysix/api-fitval.git'.
 1. 
 
 
-2. 
+2. ¿cuántas clases salen con cada versión? Explica qué ha pasado con la consulta en la versión mala. Pista: escribe la consulta tal y como le llega a PostgreSQL. -- empieza un comentario en SQL.
+
+En la versión vulnerable sin el $1 devuelve 7 clases y en la otra un array vacío. 
+
+En la mala, OR 1=1 hace que la condición siempre sea verdadera, por eso salen todas. Los -- hacen que el resto se ignore.
+
+En la segura usamos $1 para tratar el texto como un dato y evitar que modifique la consulta SQL.

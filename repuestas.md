@@ -19,8 +19,13 @@ To https://github.com/Skybysix/api-fitval.git
  ! [remote rejected] main -> main (push declined due to repository rule violations)
 error: failed to push some refs to 'https://github.com/Skybysix/api-fitval.git'.
 
-1. 
+1. ¿qué código recibe el cliente con PostgreSQL parado? ¿Qué ves en la terminal que el cliente no ve? ¿Por qué es mejor así?
 
+Cuando PostgreSQL está parado, el cliente recibe un código 503 (Service Unavailable), porque la API no puede acceder a la base de datos.
+
+En la terminal de NestJS aparece el error de conexión con PostgreSQL, pero el cliente no ve esos detalles.
+
+Es mejor así porque el usuario recibe un mensaje sencillo y no mostramos información interna de nuestra aplicación.
 
 2. ¿cuántas clases salen con cada versión? Explica qué ha pasado con la consulta en la versión mala. Pista: escribe la consulta tal y como le llega a PostgreSQL. -- empieza un comentario en SQL.
 

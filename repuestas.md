@@ -42,3 +42,7 @@ Porque así nos devuelve un error 404, que significa que el monitor no existe. S
 4. ¿por qué borrar una clase con reservas es 409 y no 400?
 
 Porque sería mala practica poner 400. No es una mala petición, sino una que no puede realizarse porque choca con otras tablas de PostgreSQL.
+
+5. pega el token de Ana en jwt.io. ¿Qué datos lleva dentro? ¿Por qué no metemos también el rol?
+
+El token contiene el identificador del usuario (sub), la fecha de creación (iat) y la fecha de expiración (exp). No contiene el rol porque este puede cambiar durante la validez del token. Por seguridad y para mantener la información actualizada, el rol se consulta directamente en la base de datos.

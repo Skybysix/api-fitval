@@ -3,9 +3,10 @@ import { AppController } from './app.controller';
 import { DatabaseModule } from './database/database.module';
 import { PlansModule } from './plans/plans.module';
 import { ClassesModule } from './classes/classes.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
-  imports: [DatabaseModule, PlansModule, ClassesModule], // para que AppController pueda pedir el Pool
+  imports: [DatabaseModule, PlansModule, ClassesModule, UsersModule], // para que AppController pueda pedir el Pool
   controllers: [AppController],
 })
 export class AppModule {}

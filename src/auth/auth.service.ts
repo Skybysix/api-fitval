@@ -30,10 +30,7 @@ export class AuthService {
     const passwordHash = await argon2.hash(dto.password);
 
     // Guardamos el usuario con su contraseña hasheada.
-    const user = await this.usersService.create(
-      dto.email,
-      passwordHash,
-    );
+    const user = await this.usersService.create(dto.email, passwordHash);
 
     // Devolvemos únicamente los datos públicos.
     return {
@@ -60,5 +57,19 @@ export class AuthService {
     const accessToken = await this.jwtService.signAsync(payload);
 
     return { accessToken };
+  }
+  // Busca al usuario autenticado y devuelve sus datos públicos.
+  async me(userId: number) {
+    const user = await this.usersService.findById(userId);
+
+    if (!user) {
+      throw new UnauthorizedException('El usuario ya no existe');
+    }
+
+    return {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    };
   }
 }

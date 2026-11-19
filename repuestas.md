@@ -34,3 +34,11 @@ En la versión vulnerable sin el $1 devuelve 7 clases y en la otra un array vac�
 En la mala, OR 1=1 hace que la condición siempre sea verdadera, por eso salen todas. Los -- hacen que el resto se ignore.
 
 En la segura usamos $1 para tratar el texto como un dato y evitar que modifique la consulta SQL.
+
+3. PostgreSQL ya tiene una clave ajena en trainer_id. ¿Para qué comprobamos en la API que el monitor existe? ¿Qué recibiría el cliente si no lo hiciéramos?
+
+Porque así nos devuelve un error 404, que significa que el monitor no existe. Si dejásemos que sea PostgreSQIL el que envíe el mensaje predeterminado, nos devolvería un 500, que es su respuesta por defento a esa petición.
+
+4. ¿por qué borrar una clase con reservas es 409 y no 400?
+
+Porque sería mala practica poner 400. No es una mala petición, sino una que no puede realizarse porque choca con otras tablas de PostgreSQL.

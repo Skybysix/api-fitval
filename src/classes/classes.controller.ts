@@ -1,6 +1,15 @@
-
-import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Query,
+  Delete,
+} from '@nestjs/common';
 import { ClassesService } from './classes.service';
+import { CreateClassDto } from './dto/create-class.dto';
 
 @Controller('classes')
 export class ClassesController {
@@ -18,5 +27,15 @@ export class ClassesController {
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.classesService.findOne(id);
+  }
+  // POST /api/classes
+  @Post()
+  create(@Body() dto: CreateClassDto) {
+    return this.classesService.create(dto);
+  }
+  // DELETE /api/classes/:id
+  @Delete(':id')
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.classesService.remove(id);
   }
 }

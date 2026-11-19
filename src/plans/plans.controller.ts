@@ -1,5 +1,3 @@
-
-
 import { Controller, Get } from '@nestjs/common';
 import { PlansService } from './plans.service';
 

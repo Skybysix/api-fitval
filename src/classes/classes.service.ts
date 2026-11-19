@@ -1,7 +1,7 @@
-
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, } from '@nestjs/common';
 import { Pool } from 'pg';
 import { GymClass, GymClassRow, toGymClass } from './gym-class';
+import { CreateClassDto } from './dto/create-class.dto';
 
 @Injectable()
 export class ClassesService {
@@ -52,5 +52,31 @@ export class ClassesService {
     }
 
     return toGymClass(result.rows[0]);
+  }
+    // POST /api/classes: crea una nueva clase.
+  async create(dto: CreateClassDto): Promise<GymClass> {
+    // 1. Comprobamos que existe el monitor.
+    const trainer = await this.pool.query(
+      'SELECT id FROM trainers WHERE id = $1',
+      [dto.trainerId],
+    );
+
+    // Si no existe, devolvemos un error 400.
+    if (trainer.rows.length === 0) {
+      throw new BadRequestException(
+        'No existe ningún monitor con ese trainerId',
+      );
+    }
+
+    // 2. Insertamos la nueva clase en la base de datos.
+    const result = await this.pool.query<{ id: number }>(
+      `INSERT INTO classes (activity, room, starts_at, spots, trainer_id)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING id`,
+      [dto.activity, dto.room, dto.startsAt, dto.spots, dto.trainerId],
+    );
+
+    // 3. Recuperamos la clase creada con el nombre de su monitor.
+    return this.findOne(result.rows[0].id);
   }
 }

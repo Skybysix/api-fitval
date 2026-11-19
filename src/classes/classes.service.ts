@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ConflictException, } from '@nestjs/common';
 import { Pool } from 'pg';
 import { GymClass, GymClassRow, toGymClass } from './gym-class';
 import { CreateClassDto } from './dto/create-class.dto';
@@ -6,7 +6,7 @@ import { CreateClassDto } from './dto/create-class.dto';
 @Injectable()
 export class ClassesService {
   // Inyectamos la conexión con PostgreSQL.
-  constructor(private readonly pool: Pool) {}
+  constructor(private readonly pool: Pool) { }
 
   // Consulta SQL común para obtener las clases y el nombre de su monitor.
   private readonly baseQuery = `
@@ -53,7 +53,8 @@ export class ClassesService {
 
     return toGymClass(result.rows[0]);
   }
-    // POST /api/classes: crea una nueva clase.
+  
+  // POST /api/classes: crea una nueva clase.
   async create(dto: CreateClassDto): Promise<GymClass> {
     // 1. Comprobamos que existe el monitor.
     const trainer = await this.pool.query(
@@ -78,5 +79,30 @@ export class ClassesService {
 
     // 3. Recuperamos la clase creada con el nombre de su monitor.
     return this.findOne(result.rows[0].id);
+  }
+
+  // DELETE /api/classes/:id: elimina una clase.
+  async remove(id: number): Promise<GymClass> {
+    // 1. Comprobamos que la clase existe.
+    const gymClass = await this.findOne(id);
+
+    // 2. Comprobamos si tiene reservas asociadas.
+    const bookings = await this.pool.query<{ total: number }>(
+      'SELECT COUNT(*)::int AS total FROM bookings WHERE class_id = $1',
+      [id],
+    );
+
+    // Si tiene reservas, no permitimos eliminarla.
+    if (bookings.rows[0].total > 0) {
+      throw new ConflictException(
+        'No se puede eliminar una clase que tiene reservas',
+      );
+    }
+
+    // 3. Eliminamos la clase.
+    await this.pool.query('DELETE FROM classes WHERE id = $1', [id]);
+
+    // 4. Devolvemos los datos de la clase eliminada.
+    return gymClass;
   }
 }

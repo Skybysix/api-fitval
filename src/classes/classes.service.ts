@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException, ConflictException, } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { Pool } from 'pg';
 import { GymClass, GymClassRow, toGymClass } from './gym-class';
 import { CreateClassDto } from './dto/create-class.dto';
@@ -6,7 +11,7 @@ import { CreateClassDto } from './dto/create-class.dto';
 @Injectable()
 export class ClassesService {
   // Inyectamos la conexión con PostgreSQL.
-  constructor(private readonly pool: Pool) { }
+  constructor(private readonly pool: Pool) {}
 
   // Consulta SQL común para obtener las clases y el nombre de su monitor.
   private readonly baseQuery = `
@@ -53,7 +58,7 @@ export class ClassesService {
 
     return toGymClass(result.rows[0]);
   }
-  
+
   // POST /api/classes: crea una nueva clase.
   async create(dto: CreateClassDto): Promise<GymClass> {
     // 1. Comprobamos que existe el monitor.

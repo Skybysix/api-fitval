@@ -1,5 +1,4 @@
-
- // Así llega un plan desde PostgreSQL (una fila).
+// Así llega un plan desde PostgreSQL (una fila).
 export interface PlanRow {
   id: number;
   name: string;

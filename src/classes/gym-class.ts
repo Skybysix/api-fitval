@@ -1,5 +1,4 @@
-
- // Así llega una clase desde PostgreSQL (con el nombre del monitor, del JOIN).
+// Así llega una clase desde PostgreSQL (con el nombre del monitor, del JOIN).
 export interface GymClassRow {
   id: number;
   activity: string;

@@ -67,4 +67,30 @@ describe('ClassesService', () => {
         // La tercera (DELETE) nunca se ejecuta.
         expect(fakePool.query).toHaveBeenCalledTimes(2);
     });
+    it('remove borra la clase si no tiene reservas y devuelve la clase', async () => {
+        // 1.ª consulta: encuentra la clase
+        fakePool.query.mockResolvedValueOnce({ rows: [spinningRow] });
+
+        // 2.ª consulta: el COUNT indica que no hay reservas
+        fakePool.query.mockResolvedValueOnce({ rows: [{ total: 0 }] });
+
+        // 3.ª consulta: ejecuta el DELETE
+        fakePool.query.mockResolvedValueOnce({ rows: [] });
+
+        const gymClass = await service.remove(1);
+
+        // Devuelve la clase encontrada
+        expect(gymClass.trainerName).toBe('Carla Navarro');
+        expect(gymClass.activity).toBe('Spinning');
+
+        // Se han realizado 3 consultas
+        expect(fakePool.query).toHaveBeenCalledTimes(3);
+
+        // La 3.ª consulta es el DELETE y recibe el ID 1
+        expect(fakePool.query).toHaveBeenNthCalledWith(
+            3,
+            expect.stringContaining('DELETE'),
+            [1],
+        );
+    });
 });

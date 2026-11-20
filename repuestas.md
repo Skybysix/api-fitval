@@ -46,3 +46,7 @@ Porque sería mala practica poner 400. No es una mala petición, sino una que no
 5. pega el token de Ana en jwt.io. ¿Qué datos lleva dentro? ¿Por qué no metemos también el rol?
 
 El token contiene el identificador del usuario (sub), la fecha de creación (iat) y la fecha de expiración (exp). No contiene el rol porque este puede cambiar durante la validez del token. Por seguridad y para mantener la información actualizada, el rol se consulta directamente en la base de datos.
+
+6. el token de recepción se creó cuando todavía era member. ¿Por qué funciona ahora sin volver a hacer login? ¿Qué pasaría si el rol fuera dentro del token?
+
+El token de recepción sigue funcionando porque únicamente contiene el identificador del usuario (sub), no su rol. Cuando se realiza una petición, el AuthGuard valida el token y el StaffGuard consulta el rol actual del usuario directamente en la base de datos.

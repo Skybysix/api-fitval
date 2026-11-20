@@ -50,3 +50,15 @@ El token contiene el identificador del usuario (sub), la fecha de creación (iat
 6. el token de recepción se creó cuando todavía era member. ¿Por qué funciona ahora sin volver a hacer login? ¿Qué pasaría si el rol fuera dentro del token?
 
 El token de recepción sigue funcionando porque únicamente contiene el identificador del usuario (sub), no su rol. Cuando se realiza una petición, el AuthGuard valida el token y el StaffGuard consulta el rol actual del usuario directamente en la base de datos.
+
+7. en el Ejercicio 6.4, ¿por qué el test no necesita PostgreSQL? ¿Qué no puede comprobar un test con un Pool fal so?
+
+El test no necesita PostgreSQL porque utiliza un Pool falso que simula la base de datos.
+
+No puede comprobar si las consultas SQL funcionan realmente en PostgreSQL ni si las tablas y relaciones son correctas.
+
+8. ¿por qué el correo lleva Date.now()? ¿Qué pasaría la segunda vez que ejecutas los tests con un correo fijo?
+
+Date.now() genera un correo diferente en cada ejecución para evitar duplicados.
+
+Si usáramos un correo fijo, la segunda ejecución daría un error 409 Conflict porque el usuario ya estaría registrado.

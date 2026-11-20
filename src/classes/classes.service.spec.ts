@@ -1,8 +1,12 @@
-import { NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Pool } from 'pg';
 import { ClassesService } from './classes.service';
 
 // Una fila de clase como la devuelve el JOIN.
+// La usaremos en varios tests.
 const spinningRow = {
   id: 1,
   activity: 'Spinning',
@@ -13,7 +17,7 @@ const spinningRow = {
 };
 
 describe('ClassesService', () => {
-  // Un Pool falso: no se conecta a PostgreSQL.
+  // Un Pool falso: no habla con PostgreSQL.
   const fakePool = { query: jest.fn() };
   const service = new ClassesService(fakePool as unknown as Pool);
 
@@ -36,5 +40,21 @@ describe('ClassesService', () => {
     expect(gymClass.startsAt).toEqual(
       new Date('2026-11-02T09:00:00Z'),
     );
+  });
+
+  it('create lanza BadRequestException si el monitor no existe y no hace INSERT', async () => {
+    fakePool.query.mockResolvedValue({ rows: [] });
+
+    const dto = {
+      activity: 'Spinning',
+      room: 'Sala 1',
+      startsAt: '2026-11-02T09:00:00Z',
+      spots: 12,
+      trainerId: 99,
+    };
+
+    await expect(service.create(dto)).rejects.toThrow(BadRequestException);
+
+    expect(fakePool.query).toHaveBeenCalledTimes(1);
   });
 });

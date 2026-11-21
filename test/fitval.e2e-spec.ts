@@ -11,6 +11,11 @@ type LoginResponse = {
   accessToken: string;
 };
 
+// Tipo de la respuesta paginada de clases
+type ClassesPageResponse = {
+  data: unknown[];
+};
+
 describe('API de FitVal', () => {
   let app: INestApplication;
   let server: Server;
@@ -101,5 +106,22 @@ describe('API de FitVal', () => {
       .send({});
 
     expect(response.status).toBe(403);
+  });
+
+  it('GET /api/v2/classes?page=1&limit=3 devuelve 3 clases', async () => {
+    const response = await request(server).get(
+      '/api/v2/classes?page=1&limit=3',
+    );
+
+    expect(response.status).toBe(200);
+
+    const body = response.body as ClassesPageResponse;
+    expect(body.data).toHaveLength(3);
+  });
+
+  it('GET /api/v2/classes?limit=100 responde 400', async () => {
+    const response = await request(server).get('/api/v2/classes?limit=100');
+
+    expect(response.status).toBe(400);
   });
 });

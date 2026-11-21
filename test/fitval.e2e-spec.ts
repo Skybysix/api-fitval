@@ -33,7 +33,9 @@ describe('API de FitVal', () => {
     const password = 'TestPassword123!';
 
     // Registramos un socio
-    await request(server).post('/api/v1/auth/register').send({ email, password });
+    await request(server)
+      .post('/api/v1/auth/register')
+      .send({ email, password });
 
     // Iniciamos sesión con el socio recién registrado
     const loginResponse = await request(server)
@@ -52,14 +54,14 @@ describe('API de FitVal', () => {
   });
 
   it('GET /api/v1/health responde 200', async () => {
-    const response = await request(server).get('/api/v1/health')
+    const response = await request(server).get('/api/v1/health');
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ status: 'ok', database: 'fitval' });
   });
 
   it('GET /api/v1/classes responde 200 y devuelve un array', async () => {
-    const response = await request(server).get('/api/v1/classes') 
+    const response = await request(server).get('/api/v1/classes');
 
     expect(response.status).toBe(200);
     expect(Array.isArray(response.body)).toBe(true);

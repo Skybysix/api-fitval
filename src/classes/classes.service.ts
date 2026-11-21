@@ -7,6 +7,7 @@ import {
 import { Pool } from 'pg';
 import { GymClass, GymClassRow, toGymClass } from './gym-class';
 import { CreateClassDto } from './dto/create-class.dto';
+import { FindClassesQueryDto } from './dto/find-classes-query.dto';
 
 @Injectable()
 export class ClassesService {
@@ -42,6 +43,58 @@ export class ClassesService {
     const result = await this.pool.query<GymClassRow>(query, values);
 
     return result.rows.map(toGymClass);
+  }
+
+  // GET /api/v2/classes: devuelve las clases paginadas.
+  async findPage(queryDto: FindClassesQueryDto) {
+    const { page, limit, sort, order, activity } = queryDto;
+
+    // Calculamos desde qué registro empezar.
+    const offset = (page - 1) * limit;
+
+    // Traducimos el nombre del campo a su columna SQL.
+    const sortColumns = {
+      startsAt: 'c.starts_at',
+      activity: 'c.activity',
+      spots: 'c.spots',
+    };
+
+    const sortColumn = sortColumns[sort];
+
+    // Construimos el filtro por actividad.
+    let where = '';
+    const values: string[] = [];
+
+    if (activity) {
+      where = ` WHERE c.activity ILIKE '%' || $1 || '%'`;
+      values.push(activity);
+    }
+
+    // Consultamos las clases de la página solicitada.
+    const dataResult = await this.pool.query<GymClassRow>(
+      `${this.baseQuery}${where}
+     ORDER BY ${sortColumn} ${order.toUpperCase()}
+     LIMIT $${values.length + 1}
+     OFFSET $${values.length + 2}`,
+      [...values, limit, offset],
+    );
+
+    // Contamos el total de clases que cumplen el filtro.
+    const countResult = await this.pool.query<{ total: number }>(
+      `SELECT COUNT(*)::int AS total FROM classes c${where}`,
+      values,
+    );
+
+    const total = countResult.rows[0].total;
+
+    // Devolvemos los datos y la información de paginación.
+    return {
+      data: dataResult.rows.map(toGymClass),
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   // GET /api/classes/:id: devuelve una clase concreta.

@@ -33,11 +33,11 @@ describe('API de FitVal', () => {
     const password = 'TestPassword123!';
 
     // Registramos un socio
-    await request(server).post('/api/auth/register').send({ email, password });
+    await request(server).post('/api/v1/auth/register').send({ email, password });
 
     // Iniciamos sesión con el socio recién registrado
     const loginResponse = await request(server)
-      .post('/api/auth/login')
+      .post('/api/v1/auth/login')
       .send({ email, password });
 
     // Guardamos el token para utilizarlo en los tests
@@ -51,40 +51,40 @@ describe('API de FitVal', () => {
     await app.close();
   });
 
-  it('GET /api/health responde 200', async () => {
-    const response = await request(server).get('/api/health');
+  it('GET /api/v1/health responde 200', async () => {
+    const response = await request(server).get('/api/v1/health')
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ status: 'ok', database: 'fitval' });
   });
 
-  it('GET /api/classes responde 200 y devuelve un array', async () => {
-    const response = await request(server).get('/api/classes');
+  it('GET /api/v1/classes responde 200 y devuelve un array', async () => {
+    const response = await request(server).get('/api/v1/classes') 
 
     expect(response.status).toBe(200);
     expect(Array.isArray(response.body)).toBe(true);
   });
 
-  it('GET /api/classes/abc responde 400', async () => {
-    const response = await request(server).get('/api/classes/abc');
+  it('GET /api/v1/classes/abc responde 400', async () => {
+    const response = await request(server).get('/api/v1/classes/abc');
 
     expect(response.status).toBe(400);
   });
 
-  it('GET /api/classes/999999 responde 404', async () => {
-    const response = await request(server).get('/api/classes/999999');
+  it('GET /api/v1/classes/999999 responde 404', async () => {
+    const response = await request(server).get('/api/v1/classes/999999');
 
     expect(response.status).toBe(404);
   });
 
-  it('POST /api/classes sin token responde 401', async () => {
-    const response = await request(server).post('/api/classes').send({});
+  it('POST /api/v1/classes sin token responde 401', async () => {
+    const response = await request(server).post('/api/v1/classes').send({});
 
     expect(response.status).toBe(401);
   });
 
-  it('POST /api/auth/login con contraseña incorrecta responde 401', async () => {
-    const response = await request(server).post('/api/auth/login').send({
+  it('POST /api/v1/auth/login con contraseña incorrecta responde 401', async () => {
+    const response = await request(server).post('/api/v1/auth/login').send({
       email: 'test@fitval.com',
       password: 'contraseña-incorrecta',
     });
@@ -92,9 +92,9 @@ describe('API de FitVal', () => {
     expect(response.status).toBe(401);
   });
 
-  it('POST /api/classes con token de socio responde 403', async () => {
+  it('POST /api/v1/classes con token de socio responde 403', async () => {
     const response = await request(server)
-      .post('/api/classes')
+      .post('/api/v1/classes')
       .set('Authorization', `Bearer ${memberToken}`)
       .send({});
 

@@ -62,3 +62,14 @@ No puede comprobar si las consultas SQL funcionan realmente en PostgreSQL ni si 
 Date.now() genera un correo diferente en cada ejecución para evitar duplicados.
 
 Si usáramos un correo fijo, la segunda ejecución daría un error 409 Conflict porque el usuario ya estaría registrado.
+
+9.  en la Parte 2 rompiste la API pegando un texto dentro del SQL. Aquí el ORDER BY lleva ${...}. ¿Por qué no es peligroso? Prueba ?sort=id;DROP TABLE classes y explica qué lo para.
+
+No es peligroso porque el ${...} no introduce directamente en el SQL lo que escribe el usuario.
+
+En cuanto a ?sort=id;DROP TABLE classes, el parámetro sort se valida mediante @IsIn(), que solo permite startsAt, activity y spots. Order solo permite asc o desc. Este código viene de src\classes\dto\find-classes-query.dto.ts:
+
+@IsIn(['startsAt', 'activity', 'spots'])
+sort: 'startsAt' | 'activity' | 'spots' = 'startsAt';
+
+Por tanto, si alguien intenta enviar ?sort=id;DROP TABLE classes, la validación del DTO rechaza la petición con un error 400 antes de ejecutar la consulta SQL.

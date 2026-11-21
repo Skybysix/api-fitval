@@ -56,6 +56,7 @@ describe('ClassesService', () => {
 
     expect(fakePool.query).toHaveBeenCalledTimes(1);
   });
+
   it('remove lanza ConflictException si la clase tiene reservas y no la borra', async () => {
     // 1.ª consulta: encuentra la clase
     fakePool.query.mockResolvedValueOnce({ rows: [spinningRow] });
@@ -69,6 +70,7 @@ describe('ClassesService', () => {
     // La tercera (DELETE) nunca se ejecuta.
     expect(fakePool.query).toHaveBeenCalledTimes(2);
   });
+
   it('remove borra la clase si no tiene reservas y devuelve la clase', async () => {
     // 1.ª consulta: encuentra la clase
     fakePool.query.mockResolvedValueOnce({ rows: [spinningRow] });
@@ -94,5 +96,24 @@ describe('ClassesService', () => {
       expect.stringContaining('DELETE'),
       [1],
     );
+  });
+
+  it('findPage devuelve el total y las páginas correctamente', async () => {
+    // 1.ª consulta: devuelve una clase para la página actual
+    fakePool.query.mockResolvedValueOnce({ rows: [spinningRow] });
+
+    // 2.ª consulta: devuelve el total de clases
+    fakePool.query.mockResolvedValueOnce({ rows: [{ total: 7 }] });
+
+    const result = await service.findPage({
+      page: 1,
+      limit: 3,
+      sort: 'startsAt',
+      order: 'asc',
+    });
+
+    expect(result.total).toBe(7);
+    expect(result.totalPages).toBe(3);
+    expect(result.data).toHaveLength(1);
   });
 });

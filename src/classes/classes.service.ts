@@ -7,6 +7,23 @@ import {
 import { Pool } from 'pg';
 import { GymClass, GymClassRow, toGymClass } from './gym-class';
 import { CreateClassDto } from './dto/create-class.dto';
+import { ListClassesQueryDto } from './dto/find-classes-query.dto';
+
+// Estructura de la respuesta paginada de clases
+type GymClassPage = {
+  data: GymClass[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+};
+
+// Relaciona los campos de la API con las columnas de PostgreSQL
+const SORT_COLUMNS = {
+  startsAt: 'c.starts_at',
+  activity: 'c.activity',
+  spots: 'c.spots',
+};
 
 @Injectable()
 export class ClassesService {
@@ -42,6 +59,52 @@ export class ClassesService {
     const result = await this.pool.query<GymClassRow>(query, values);
 
     return result.rows.map(toGymClass);
+  }
+
+  // GET /api/v2/classes: devuelve las clases paginadas.
+  async findPage(queryDto: ListClassesQueryDto): Promise<GymClassPage> {
+    const { page, limit, sort, order, activity } = queryDto;
+
+    // Calculamos desde qué registro empezar.
+    const offset = (page - 1) * limit;
+
+    // Obtenemos la columna SQL correspondiente al campo elegido.
+    const sortColumn = SORT_COLUMNS[sort];
+
+    // Construimos el filtro por actividad.
+    let where = '';
+    const values: string[] = [];
+
+    if (activity) {
+      where = ` WHERE c.activity ILIKE '%' || $1 || '%'`;
+      values.push(activity);
+    }
+
+    // Consultamos las clases de la página solicitada.
+    const dataResult = await this.pool.query<GymClassRow>(
+      `${this.baseQuery}${where}
+     ORDER BY ${sortColumn} ${order.toUpperCase()}, c.id
+     LIMIT $${values.length + 1}
+     OFFSET $${values.length + 2}`,
+      [...values, limit, offset],
+    );
+
+    // Contamos el total de clases que cumplen el filtro.
+    const countResult = await this.pool.query<{ total: number }>(
+      `SELECT COUNT(*)::int AS total FROM classes c${where}`,
+      values,
+    );
+
+    const total = countResult.rows[0].total;
+
+    // Devolvemos los datos y la información de paginación.
+    return {
+      data: dataResult.rows.map(toGymClass),
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   // GET /api/classes/:id: devuelve una clase concreta.

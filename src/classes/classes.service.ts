@@ -7,7 +7,23 @@ import {
 import { Pool } from 'pg';
 import { GymClass, GymClassRow, toGymClass } from './gym-class';
 import { CreateClassDto } from './dto/create-class.dto';
-import { FindClassesQueryDto } from './dto/find-classes-query.dto';
+import { ListClassesQueryDto } from './dto/find-classes-query.dto';
+
+// Estructura de la respuesta paginada de clases
+type GymClassPage = {
+  data: GymClass[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+};
+
+// Relaciona los campos de la API con las columnas de PostgreSQL
+const SORT_COLUMNS = {
+  startsAt: 'c.starts_at',
+  activity: 'c.activity',
+  spots: 'c.spots',
+};
 
 @Injectable()
 export class ClassesService {
@@ -46,20 +62,14 @@ export class ClassesService {
   }
 
   // GET /api/v2/classes: devuelve las clases paginadas.
-  async findPage(queryDto: FindClassesQueryDto) {
+  async findPage(queryDto: ListClassesQueryDto): Promise<GymClassPage> {
     const { page, limit, sort, order, activity } = queryDto;
 
     // Calculamos desde qué registro empezar.
     const offset = (page - 1) * limit;
 
-    // Traducimos el nombre del campo a su columna SQL.
-    const sortColumns = {
-      startsAt: 'c.starts_at',
-      activity: 'c.activity',
-      spots: 'c.spots',
-    };
-
-    const sortColumn = sortColumns[sort];
+    // Obtenemos la columna SQL correspondiente al campo elegido.
+    const sortColumn = SORT_COLUMNS[sort];
 
     // Construimos el filtro por actividad.
     let where = '';
@@ -73,7 +83,7 @@ export class ClassesService {
     // Consultamos las clases de la página solicitada.
     const dataResult = await this.pool.query<GymClassRow>(
       `${this.baseQuery}${where}
-     ORDER BY ${sortColumn} ${order.toUpperCase()}
+     ORDER BY ${sortColumn} ${order.toUpperCase()}, c.id
      LIMIT $${values.length + 1}
      OFFSET $${values.length + 2}`,
       [...values, limit, offset],

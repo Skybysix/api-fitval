@@ -14,7 +14,7 @@ import { ClassesService } from './classes.service';
 import { CreateClassDto } from './dto/create-class.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { StaffGuard } from '../auth/staff.guard';
-import { FindClassesQueryDto } from './dto/find-classes-query.dto';
+import { ListClassesQueryDto } from './dto/find-classes-query.dto';
 
 @Controller('classes')
 export class ClassesController {
@@ -30,7 +30,7 @@ export class ClassesController {
   // GET /api/v2/classes
   @Get()
   @Version('2')
-  findPage(@Query() queryDto: FindClassesQueryDto) {
+  findPage(@Query() queryDto: ListClassesQueryDto) {
     return this.classesService.findPage(queryDto);
   }
 

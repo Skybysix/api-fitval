@@ -1,7 +1,7 @@
 import { Type } from 'class-transformer';
 import { IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
-export class FindClassesQueryDto {
+export class ListClassesQueryDto {
   // Número de página (por defecto 1)
   @IsOptional()
   @Type(() => Number)

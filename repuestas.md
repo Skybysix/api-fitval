@@ -73,3 +73,9 @@ En cuanto a ?sort=id;DROP TABLE classes, el parámetro sort se valida mediante @
 sort: 'startsAt' | 'activity' | 'spots' = 'startsAt';
 
 Por tanto, si alguien intenta enviar ?sort=id;DROP TABLE classes, la validación del DTO rechaza la petición con un error 400 antes de ejecutar la consulta SQL.
+
+10. ¿por qué el login tiene un límite más duro que el resto de rutas? ¿Qué ataque frena? ¿Qué pasaría en Render sin app.set('trust proxy', 1)?
+
+Porque un atacante podría intentar iniciar sesión repetidamente probando miles de combinaciones de contraseñas hasta encontrar la correcta. Al limitar los intentos, dificultamos que pueda adivinar una contraseña mediante intentos automatizados.    
+
+En Render, la aplicación funciona detrás de un proxy inverso. Sin app.set('trust proxy', 1), Express podría identificar la IP del proxy en lugar de la IP real del cliente

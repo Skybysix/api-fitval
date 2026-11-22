@@ -1,4 +1,7 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+
 import { AppController } from './app.controller';
 import { DatabaseModule } from './database/database.module';
 import { PlansModule } from './plans/plans.module';
@@ -8,12 +11,24 @@ import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000, // ventana de 1 minuto
+        limit: 20, // máximo 20 peticiones
+      },
+    ]),
     DatabaseModule,
     PlansModule,
     ClassesModule,
     UsersModule,
     AuthModule,
-  ], // para que AppController pueda pedir el Pool
+  ],
   controllers: [AppController],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

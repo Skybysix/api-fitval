@@ -4,10 +4,15 @@ import {
   VersioningType,
 } from '@nestjs/common';
 
+import helmet from 'helmet';
+
 // Configuración común de la aplicación
 export function configureApp(app: INestApplication) {
   // Todas las rutas empiezan por /api
   app.setGlobalPrefix('api');
+
+  // Cabeceras HTTP de seguridad
+  app.use(helmet());
 
   // Versionado de la API mediante la URL
   app.enableVersioning({

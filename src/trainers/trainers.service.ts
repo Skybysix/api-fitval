@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ConflictException,
 } from '@nestjs/common';
 import { Pool } from 'pg';
 import { CreateTrainerDto } from './dto/create-trainer.dto';
@@ -45,36 +46,37 @@ export class TrainersService {
       // 1. Comenzamos la transacción.
       await client.query('BEGIN');
 
-      // 2. Comprobamos que todas las especialidades existen.
-      const specialtiesResult = await client.query(
-        'SELECT id FROM specialties WHERE id = ANY($1::int[])',
-        [dto.specialties],
-      );
-
-      if (specialtiesResult.rows.length !== dto.specialties.length) {
-        throw new BadRequestException('Una o varias especialidades no existen');
-      }
-
-      // 3. Insertamos el monitor.
+      // 2. Insertamos el monitor.
       const trainerResult = await client.query<{ id: number }>(
         `INSERT INTO trainers (dni, name, email)
-         VALUES ($1, $2, $3)
-         RETURNING id`,
+       VALUES ($1, $2, $3)
+       RETURNING id`,
         [dto.dni, dto.name, dto.email],
       );
 
       const trainerId = trainerResult.rows[0].id;
 
-      // 4. Relacionamos el monitor con sus especialidades.
-      for (const specialtyId of dto.specialties) {
+      // 3. Comprobamos cada especialidad y creamos su relación.
+      for (const specialtyId of dto.specialtyIds) {
+        const specialtyResult = await client.query(
+          'SELECT id FROM specialties WHERE id = $1',
+          [specialtyId],
+        );
+
+        if (specialtyResult.rows.length === 0) {
+          throw new BadRequestException(
+            `No existe la especialidad ${specialtyId}`,
+          );
+        }
+
         await client.query(
           `INSERT INTO trainer_specialties (trainer_id, specialty_id)
-           VALUES ($1, $2)`,
+         VALUES ($1, $2)`,
           [trainerId, specialtyId],
         );
       }
 
-      // 5. Confirmamos todos los cambios.
+      // 4. Confirmamos todos los cambios.
       await client.query('COMMIT');
 
       // Devolvemos el monitor con sus especialidades.
@@ -82,9 +84,20 @@ export class TrainersService {
     } catch (error) {
       // Si algo falla, deshacemos todos los cambios.
       await client.query('ROLLBACK');
+
+      // 5. Si el DNI o el email están repetidos, devolvemos un 409.
+      const errorCode =
+        typeof error === 'object' && error !== null && 'code' in error
+          ? (error as { code?: unknown }).code
+          : undefined;
+
+      if (errorCode === '23505') {
+        throw new ConflictException('El DNI o el email ya están registrados');
+      }
+
       throw error;
     } finally {
-      // Liberamos la conexión.
+      // 6. Liberamos la conexión.
       client.release();
     }
   }

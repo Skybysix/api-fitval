@@ -10,7 +10,6 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { TrainersModule } from './trainers/trainers.module';
 
-
 @Module({
   imports: [
     ThrottlerModule.forRoot([
@@ -32,7 +31,6 @@ import { TrainersModule } from './trainers/trainers.module';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
-        
   ],
 })
 export class AppModule {}

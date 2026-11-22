@@ -1,4 +1,3 @@
-
 import {
   Injectable,
   NotFoundException,
@@ -6,29 +5,26 @@ import {
 } from '@nestjs/common';
 import { Pool } from 'pg';
 import { CreateTrainerDto } from './dto/create-trainer.dto';
+import { toTrainer, type TrainerRow } from './trainer';
 
 @Injectable()
 export class TrainersService {
   constructor(private readonly pool: Pool) {}
 
   // GET /api/v1/trainers/:id
-  // Busca un monitor y sus especialidades.
+  // Busca un monitor y reúne sus especialidades.
   async findOne(id: number) {
-    const result = await this.pool.query(
+    const result = await this.pool.query<TrainerRow>(
       `SELECT
-        t.id,
-        t.name,
-        t.email,
-        COALESCE(
-          ARRAY_AGG(s.name ORDER BY s.name)
-            FILTER (WHERE s.id IS NOT NULL),
-          ARRAY[]::varchar[]
-        ) AS specialties
-      FROM trainers t
-      LEFT JOIN trainer_specialties ts ON ts.trainer_id = t.id
-      LEFT JOIN specialties s ON s.id = ts.specialty_id
-      WHERE t.id = $1
-      GROUP BY t.id`,
+      t.id,
+      t.name,
+      t.email,
+      s.name AS specialty
+    FROM trainers t
+    JOIN trainer_specialties ts ON ts.trainer_id = t.id
+    JOIN specialties s ON s.id = ts.specialty_id
+    WHERE t.id = $1
+    ORDER BY s.id`,
       [id],
     );
 
@@ -36,7 +32,7 @@ export class TrainersService {
       throw new NotFoundException('Trainer not found');
     }
 
-    return result.rows[0];
+    return toTrainer(result.rows);
   }
 
   // POST /api/v1/trainers
@@ -56,9 +52,7 @@ export class TrainersService {
       );
 
       if (specialtiesResult.rows.length !== dto.specialties.length) {
-        throw new BadRequestException(
-          'Una o varias especialidades no existen',
-        );
+        throw new BadRequestException('Una o varias especialidades no existen');
       }
 
       // 3. Insertamos el monitor.

@@ -78,11 +78,23 @@ describe('API de FitVal', () => {
     expect(response.status).toBe(400);
   });
 
-  it('GET /api/v1/classes/999999 responde 404', async () => {
+  it('GET /api/v1/classes/999999 responde 404 con el formato nuevo', async () => {
     const response = await request(server).get('/api/v1/classes/999999');
 
     expect(response.status).toBe(404);
+    expect(response.body).toHaveProperty(
+      'path',
+      '/api/v1/classes/999999',
+    );
+    expect(response.body).toHaveProperty('timestamp');
   });
+
+  it('Las respuestas no incluyen la cabecera x-powered-by', async () => {
+    const response = await request(server).get('/api/v1/health');
+
+    expect(response.headers['x-powered-by']).toBeUndefined();
+  });
+
 
   it('POST /api/v1/classes sin token responde 401', async () => {
     const response = await request(server).post('/api/v1/classes').send({});

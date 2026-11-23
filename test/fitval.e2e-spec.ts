@@ -82,10 +82,7 @@ describe('API de FitVal', () => {
     const response = await request(server).get('/api/v1/classes/999999');
 
     expect(response.status).toBe(404);
-    expect(response.body).toHaveProperty(
-      'path',
-      '/api/v1/classes/999999',
-    );
+    expect(response.body).toHaveProperty('path', '/api/v1/classes/999999');
     expect(response.body).toHaveProperty('timestamp');
   });
 
@@ -94,7 +91,6 @@ describe('API de FitVal', () => {
 
     expect(response.headers['x-powered-by']).toBeUndefined();
   });
-
 
   it('POST /api/v1/classes sin token responde 401', async () => {
     const response = await request(server).post('/api/v1/classes').send({});

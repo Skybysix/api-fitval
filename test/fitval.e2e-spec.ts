@@ -132,14 +132,15 @@ describe('API de FitVal', () => {
 
     expect(response.status).toBe(400);
   });
-  
-  it('GET /api/v1/trainers/1 responde 200 y devuelve sus especialidades', async () => {
-  const response = await request(server).get('/api/v1/trainers/1');
 
-  expect(response.status).toBe(200);
-  expect(response.body).toHaveProperty('specialties', [
-    'Ciclo indoor',
-    'Fuerza',
-  ]);
-});
+  it('GET /api/v1/trainers/1 responde 200 y devuelve sus especialidades', async () => {
+    const response = await request(server).get('/api/v1/trainers/1');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('specialties', [
+      'Ciclo indoor',
+      'Fuerza',
+    ]);
+  });
+
 });

@@ -20,6 +20,7 @@ export class TrainersService {
       t.id,
       t.name,
       t.email,
+      t.photo_url,
       s.name AS specialty
     FROM trainers t
     JOIN trainer_specialties ts ON ts.trainer_id = t.id
@@ -100,5 +101,15 @@ export class TrainersService {
       // 6. Liberamos la conexión.
       client.release();
     }
+  }
+  // Actualiza la foto de un monitor.
+  async setPhoto(id: number, photoUrl: string) {
+    await this.pool.query('UPDATE trainers SET photo_url = $1 WHERE id = $2', [
+      photoUrl,
+      id,
+    ]);
+
+    // Devolvemos el monitor actualizado.
+    return this.findOne(id);
   }
 }

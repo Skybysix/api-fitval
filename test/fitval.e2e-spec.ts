@@ -142,5 +142,4 @@ describe('API de FitVal', () => {
       'Fuerza',
     ]);
   });
-
 });

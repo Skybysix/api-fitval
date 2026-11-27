@@ -12,7 +12,11 @@ export function configureApp(app: INestApplication) {
   app.setGlobalPrefix('api');
 
   // Cabeceras HTTP de seguridad
-  app.use(helmet());
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    }),
+  );
 
   // Todos los errores con la misma forma
   app.useGlobalFilters(new AllExceptionsFilter());

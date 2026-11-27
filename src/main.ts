@@ -16,6 +16,7 @@ async function bootstrap() {
 
   // Aplica la configuración común de la API
   configureApp(app);
+  app.useStaticAssets('uploads', { prefix: '/uploads' });
 
   await app.listen(process.env.PORT ?? 3000);
 }
